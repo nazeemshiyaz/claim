@@ -130,4 +130,17 @@ app.get('/dashboard', (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
-});
+});    // Serve claims system
+   app.get('/claims-system.html', (req, res) => {
+       res.sendFile(path.join(__dirname, 'public', 'claims-system.html'));
+   });
+
+   // Serve admin dashboard
+   app.get('/admin-dashboard.html', (req, res) => {
+       res.sendFile(path.join(__dirname, 'public', 'admin-dashboard.html'));
+   });
+
+   // Serve user dashboard
+   app.get('/user-dashboard.html', (req, res) => {
+       res.sendFile(path.join(__dirname, 'public', 'user-dashboard.html'));
+   });
