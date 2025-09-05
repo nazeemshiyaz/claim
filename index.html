@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Blue Max Claims – Database Integrated</title>
+  <style>
+    :root { --bg:#0f172a; --card:#ffffff; --ink:#0b1324; --muted:#6b7280; --brand:#2563eb; --ok:#16a34a; --warn:#d97706; --bad:#dc2626; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial; background: #f3f4f6; color: var(--ink); }
+    header { background: linear-gradient(180deg, #111827, #0b1324); color: white; padding: 20px; }
+    header h1 { margin: 0 0 6px; font-size: 20px; letter-spacing: .3px; }
+    header small { color:#cbd5e1 }
+    main { padding: 18px; max-width: 1100px; margin: 0 auto; }
+    .grid { display: grid; gap: 12px; }
+    .cols-2 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .card { background: var(--card); border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,.04); }
+    .card h2 { margin: 0; padding: 12px 14px; font-size: 16px; border-bottom: 1px solid #eef0f3; background: #fafafa; }
+    .body { padding: 14px; }
+    label { display:block; font-size: 13px; color: #374151; margin: 10px 0 6px; }
+    input[type="text"], input[type="number"], input[type="date"], select, textarea { width: 100%; padding: 10px 12px; border-radius: 8px; border:1px solid #d1d5db; background: white; font-size: 14px; }
+    textarea { min-height: 70px; }
+    .row { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; }
+    .btn { display:inline-block; border:0; background: var(--brand); color:white; padding: 10px 14px; border-radius: 10px; cursor: pointer; font-weight:600; }
+    .btn.secondary { background: #111827; }
+    .btn.ghost { background:#eef2ff; color:#1e3a8a; }
+    .btn.warn { background: var(--warn); }
+    .btn.ok { background: var(--ok); }
+    .btn.bad { background: var(--bad); }
+    .muted { color: var(--muted); font-size: 12px; }
+    .kv { display:flex; gap:8px; flex-wrap: wrap; }
+    .kv span { background:#f8fafc; border:1px solid #e5e7eb; padding:6px 10px; border-radius: 8px; font-size:12px; }
+    .hidden { display:none; }
+    .voucher { border:1px dashed #e5e7eb; padding:12px; border-radius:10px; background:#fcfcff; }
+    .note { font-size: 12px; color:#374151; margin-top:6px; }
+    .table { width:100%; border-collapse: collapse; }
+    .table th, .table td { border:1px solid #e5e7eb; padding:8px 10px; font-size:12px; text-align:left; }
+    .pill { display:inline-block; padding:2px 8px; border-radius:999px; font-size:11px; }
+    .pill.ok { background:#dcfce7; color:#14532d; }
+    .pill.clip { background:#fff7ed; color:#7c2d12; }
+    .pill.reject { background:#fee2e2; color:#7f1d1d; }
+    details summary { cursor: pointer; }
+    .inline { display:flex; gap:8px; align-items:center; }
+    .loading { opacity: 0.6; pointer-events: none; }
+    .alert { padding: 10px; border-radius: 8px; margin: 10px 0; }
+    .alert.success { background: #dcfce7; color: #14532d; border: 1px solid #bbf7d0; }
+    .alert.error { background: #fee2e2; color: #7f1d1d; border: 1px solid #fecaca; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Blue Max Claims — Database Integrated</h1>
+    <small>Connected to MySQL database. All data is persisted.</small>
+  </header>
+
+  <main class="grid cols-2">
+
+    <!-- PROJECT SETUP -->
+    <section class="card">
+      <h2>Project Setup (Accountant)</h2>
+      <div class="body">
+        <div class="row">
+          <div>
+            <label>Project Code (short & unique)</label>
+            <input id="projCode" type="text" placeholder="e.g., ABC100" />
+          </div>
+          <div>
+            <label>Project Name</label>
+            <input id="projName" type="text" placeholder="e.g., Kitchen Renovation – Kochi" />
+          </div>
+          <div>
+            <label>Distance Godown → Site (km)</label>
+            <input id="distanceKm" type="number" min="0" step="1" placeholder="e.g., 100" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>Phase 1 – Workdays</label>
+            <input id="p1Days" type="number" min="0" step="1" />
+          </div>
+          <div>
+            <label>Phase 1 – Technicians</label>
+            <input id="p1Techs" type="number" min="0" step="1" />
+          </div>
+          <div>
+            <label>Phase 1 – Supervisor stays?</label>
+            <select id="p1SupStay">
+              <option value="no">No</option>
+              <option value="yes">Yes</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>Phase 2 – Workdays</label>
+            <input id="p2Days" type="number" min="0" step="1" />
+          </div>
+          <div>
+            <label>Phase 2 – Technicians</label>
+            <input id="p2Techs" type="number" min="0" step="1" />
+          </div>
+          <div>
+            <label>Phase 2 – Supervisor stays?</label>
+            <select id="p2SupStay">
+              <option value="no">No</option>
+              <option value="yes">Yes</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="inline" style="margin-top:10px; gap:12px;">
+          <button class="btn" onclick="saveProjectAndComputeCaps()">Save Project & Compute Caps</button>
+          <span class="muted">Project data will be saved to database and caps calculated automatically.</span>
+        </div>
+
+        <div id="projectResult"></div>
+
+        <details id="testCaps" style="margin-top:12px;">
+          <summary>Test Mode: Show calculated caps & remaining (for your verification only)</summary>
+          <table class="table" id="capsTable"></table>
+        </details>
+      </div>
+    </section>
+
+    <!-- CLAIM ENTRY -->
+    <section class="card">
+      <h2>New Claim (Accountant)</h2>
+      <div class="body">
+        <div class="row">
+          <div>
+            <label>Claim Date</label>
+            <input id="claimDate" type="date" />
+          </div>
+          <div>
+            <label>Category</label>
+            <select id="category" onchange="onCategoryChange()">
+              <option value="">Select…</option>
+              <option value="MTF">Material Transport – Supplier → Factory</option>
+              <option value="MTG">Material Transport – Supplier → Godown</option>
+              <option value="MTS">Material Transport – Godown → Site</option>
+              <option value="TA">Technician Accommodation</option>
+              <option value="TF">Technician Food</option>
+              <option value="ST">Supervisor Travel</option>
+              <option value="SA">Supervisor Accommodation</option>
+              <option value="SF">Supervisor Food</option>
+              <option value="LU">Loading / Unloading</option>
+            </select>
+          </div>
+          <div>
+            <label>Voucher No. (auto)</label>
+            <input id="voucherNo" type="text" readonly />
+          </div>
+        </div>
+
+        <div id="fields"></div>
+
+        <div class="row">
+          <div>
+            <label>Amount Requested (₹)</label>
+            <input id="amount" type="number" min="0" step="1" />
+            <div class="muted" id="suggestion"></div>
+          </div>
+          <div>
+            <label>Upload Proof (optional)</label>
+            <input id="proof" type="file" />
+          </div>
+          <div>
+            <label>Notes (optional)</label>
+            <input id="notes" type="text" placeholder="Optional" />
+          </div>
+        </div>
+
+        <div style="margin-top:12px;" class="inline">
+          <button class="btn ok" onclick="submitClaim()">Submit Claim</button>
+          <button class="btn ghost" onclick="saveDraft()">Save Draft</button>
+        </div>
+
+        <div id="result" style="margin-top:14px;"></div>
+      </div>
+    </section>
+
+    <!-- VOUCHER PREVIEW -->
+    <section class="card" style="grid-column: 1 / -1;">
+      <h2>Voucher Preview</h2>
+      <div class="body">
+        <div id="voucher" class="voucher muted">Fill the forms to see voucher preview…</div>
+        <div style="margin-top:10px;" class="inline">
+          <button class="btn secondary" onclick="window.print()">Print / Save as PDF</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // ======= STATE =======
+    let currentProjectId = null;
+    let currentProjectCode = null;
+    const caps = { locked:false, map:{}, remaining:{}, visitsClaimed:new Set(), serialByProject:{} };
+
+    const CATEGORY_NAMES = {
+      MTF: 'Material Transport – Supplier → Factory',
+      MTG: 'Material Transport – Supplier → Godown',
+      MTS: 'Material Transport – Godown → Site',
+      TA:  'Technician Accommodation',
+      TF:  'Technician Food',
+      ST:  'Supervisor Travel',
+      SA:  'Supervisor Accommodation',
+      SF:  'Supervisor Food',
+      LU:  'Loading / Unloading'
+    };
+
+    function ceilDiv(a,b){ return Math.ceil(a/b); }
+    function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
+    function asInt(v){ const n = parseInt(v,10); return Number.isFinite(n)?n:0; }
+
+    function todayISO(){
+      const t = new Date();
+      const y=t.getFullYear(), m=('0'+(t.getMonth()+1)).slice(-2), d=('0'+t.getDate()).slice(-2);
+      return `${y}-${m}-${d}`;
+    }
+
+    document.getElementById('claimDate').value = todayISO();
+
+    // ======= SAVE PROJECT & COMPUTE CAPS =======
+    async function saveProjectAndComputeCaps(){
+      const projectData = {
+        project_code: document.getElementById('projCode').value.trim(),
+        project_name: document.getElementById('projName').value.trim(),
+        distance_km: asInt(document.getElementById('distanceKm').value),
+        phase1_days: asInt(document.getElementById('p1Days').value),
+        phase1_technicians: asInt(document.getElementById('p1Techs').value),
+        phase1_supervisor_stay: document.getElementById('p1SupStay').value,
+        phase2_days: asInt(document.getElementById('p2Days').value),
+        phase2_technicians: asInt(document.getElementById('p2Techs').value),
+        phase2_supervisor_stay: document.getElementById('p2SupStay').value
+      };
+
+      if(!projectData.project_code){ alert('Enter Project Code'); return; }
+      if(projectData.distance_km<=0){ alert('Enter valid Distance (km)'); return; }
+
+      try {
+        // Save project
+        const saveResponse = await fetch('api.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            action: 'save_project',
+            ...projectData
+          })
+        });
+
+        const saveResult = await saveResponse.json();
+        if(saveResult.error) throw new Error(saveResult.error);
+
+        currentProjectId = saveResult.project_id;
+        currentProjectCode = projectData.project_code;
+
+        // Compute caps
+        const capsResponse = await fetch('api.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            action: 'compute_caps',
+            project_id: currentProjectId
+          })
+        });
+
+        const capsResult = await capsResponse.json();
+        if(capsResult.error) throw new Error(capsResult.error);
+
+        // Update local state
+        caps.map = { project: projectData, ...capsResult.caps };
+        caps.remaining = { ...capsResult.caps };
+        caps.locked = true;
+
+        // Show success message
+        document.getElementById('projectResult').innerHTML = 
+          `<div class="alert success">Project ${projectData.project_code} saved and caps computed successfully!</div>`;
+
+        // Update caps table
+        updateCapsTable();
+
+        // Reset UI
+        document.getElementById('voucher').innerHTML = '<span class="muted">Caps computed. Enter a claim to generate a voucher preview…</span>';
+        onCategoryChange();
+
+      } catch(error) {
+        document.getElementById('projectResult').innerHTML = 
+          `<div class="alert error">Error: ${error.message}</div>`;
+      }
+    }
+
+    function updateCapsTable() {
+      const tbl = document.getElementById('capsTable');
+      const caps_data = caps.map;
+      tbl.innerHTML = `
+        <tr><th>Bucket</th><th>Cap (₹)</th><th>Remaining (₹)</th></tr>
+        <tr><td>MTF+MTG (shared)</td><td>${caps_data.mtf_mtg_pool}</td><td id="rem_mtpool">${caps.remaining.mtf_mtg_pool}</td></tr>
+        <tr><td>MTS (Godown→Site materials)</td><td>${caps_data.mts_cap}</td><td id="rem_mts">${caps.remaining.mts_cap}</td></tr>
+        <tr><td>LU (Loading+Unloading)</td><td>${caps_data.lu_cap}</td><td id="rem_lu">${caps.remaining.lu_cap}</td></tr>
+        <tr><td>TA (Technician Accommodation)</td><td>${caps_data.ta_cap}</td><td id="rem_ta">${caps.remaining.ta_cap}</td></tr>
+        <tr><td>TF (Technician Food)</td><td>${caps_data.tf_cap}</td><td id="rem_tf">${caps.remaining.tf_cap}</td></tr>
+        <tr><td>ST (Supervisor Travel)</td><td>${caps_data.st_cap}</td><td id="rem_st">${caps.remaining.st_cap}</td></tr>
+        <tr><td>SA (Supervisor Accommodation)</td><td>${caps_data.sa_cap}</td><td id="rem_sa">${caps.remaining.sa_cap}</td></tr>
+        <tr><td>SF (Supervisor Food)</td><td>${caps_data.sf_cap}</td><td id="rem_sf">${caps.remaining.sf_cap}</td></tr>
+      `;
+    }
+
+    // ======= CATEGORY-SPECIFIC FIELDS =======
+    function onCategoryChange(){
+      const cat = document.getElementById('category').value;
+      const wrap = document.getElementById('fields');
+      const sugg = document.getElementById('suggestion');
+      wrap.innerHTML = ''; sugg.textContent = '';
+      genVoucherNumber();
+
+      if(!cat) return;
+      const proj = caps.map.project || {};
+
+      if(cat==='MTS'){
+        wrap.innerHTML = `
+          <div class="row">
+            <div>
+              <label>Trip Reference</label>
+              <select id="mtsTrip"><option>Trip 1</option><option>Trip 2</option></select>
+            </div>
+            <div>
+              <label>Auto Suggest (per trip)</label>
+              <input type="text" readonly value="₹ ${proj.distance_km*2*20} (Distance × 2 × ₹20)"/>
+            </div>
+            <div></div>
+          </div>`;
+        document.getElementById('amount').value = proj.distance_km*2*20;
+        sugg.textContent = 'Suggestion applied for this category.';
+      }
+
+      if(cat==='MTF' || cat==='MTG'){
+        wrap.innerHTML = `<div class="muted">Shared pool ₹2,000 across Supplier→Factory & Supplier→Godown. Enter bill value; system will cap if needed.</div>`;
+        document.getElementById('amount').value = '';
+      }
+
+      if(cat==='LU'){
+        wrap.innerHTML = `<div class="muted">Total Loading + Unloading across project capped at ₹2,000. Enter this instance amount.</div>`;
+        document.getElementById('amount').value = '';
+      }
+
+      if(cat==='TA'){
+        wrap.innerHTML = `
+          <div class="row">
+            <div>
+              <label>Phase</label>
+              <select id="taPhase"><option>1</option><option>2</option></select>
+            </div>
+            <div>
+              <label>Nights (used)</label>
+              <input id="taNights" type="number" min="0" step="1" />
+            </div>
+            <div>
+              <label>Technicians covered</label>
+              <input id="taTechsCovered" type="number" min="0" step="1" />
+            </div>
+          </div>`;
+        const n1 = Math.max((proj.phase1_days||0)-1,0), n2 = Math.max((proj.phase2_days||0)-1,0);
+        document.getElementById('taNights').value = (document.getElementById('taPhase').value==='1'? n1 : n2);
+        document.getElementById('taTechsCovered').value = (document.getElementById('taPhase').value==='1'? (proj.phase1_technicians||0) : (proj.phase2_technicians||0));
+        setTimeout(()=>{suggestTA();},0);
+        document.getElementById('taPhase').addEventListener('change', ()=>{ 
+          const n1 = Math.max((proj.phase1_days||0)-1,0), n2 = Math.max((proj.phase2_days||0)-1,0);
+          document.getElementById('taNights').value = (document.getElementById('taPhase').value==='1'? n1 : n2);
+          document.getElementById('taTechsCovered').value = (document.getElementById('taPhase').value==='1'? (proj.phase1_technicians||0) : (proj.phase2_technicians||0));
+          suggestTA();
+        });
+        document.getElementById('taNights').addEventListener('input', suggestTA);
+        document.getElementById('taTechsCovered').addEventListener('input', suggestTA);
+      }
+
+      if(cat==='TF'){
+        wrap.innerHTML = `
+          <div class="row">
+            <div>
+              <label>Phase</label>
+              <select id="tfPhase"><option>1</option><option>2</option></select>
+            </div>
+            <div>
+              <label>Days (meals)</label>
+              <input id="tfDays" type="number" min="0" step="1" />
+            </div>
+            <div>
+              <label>Technicians covered</label>
+              <input id="tfTechsCovered" type="number" min="0" step="1" />
+            </div>
+          </div>`;
+        document.getElementById('tfDays').value = (document.getElementById('tfPhase').value==='1'? (proj.phase1_days||0) : (proj.phase2_days||0));
+        document.getElementById('tfTechsCovered').value = (document.getElementById('tfPhase').value==='1'? (proj.phase1_technicians||0) : (proj.phase2_technicians||0));
+        setTimeout(()=>{suggestTF();},0);
+        document.getElementById('tfPhase').addEventListener('change', ()=>{
+          document.getElementById('tfDays').value = (document.getElementById('tfPhase').value==='1'? (proj.phase1_days||0) : (proj.phase2_days||0));
+          document.getElementById('tfTechsCovered').value = (document.getElementById('tfPhase').value==='1'? (proj.phase1_technicians||0) : (proj.phase2_technicians||0));
+          suggestTF();
+        });
+        document.getElementById('tfDays').addEventListener('input', suggestTF);
+        document.getElementById('tfTechsCovered').addEventListener('input', suggestTF);
+      }
+
+      if(cat==='ST'){
+        const options = [1,2,3].map(v=>`<option value="${v}">${v}</option>`).join('');
+        wrap.innerHTML = `
+          <div class="row">
+            <div>
+              <label>Visit No. (max 3)</label>
+              <select id="stVisit">${options}</select>
+            </div>
+            <div>
+              <label>Auto Amount (per visit)</label>
+              <input type="text" readonly value="₹ ${proj.distance_km*2*4} (Distance × 2 × ₹4)" />
+            </div>
+            <div></div>
+          </div>`;
+        document.getElementById('amount').value = proj.distance_km*2*4;
+        sugg.textContent = 'Supervisor has 3 compulsory visits; amount per visit auto-filled.';
+      }
+
+      if(cat==='SA'){
+        wrap.innerHTML = `
+          <div class="row">
+            <div>
+              <label>Phase</label>
+              <select id="saPhase"><option>1</option><option>2</option></select>
+            </div>
+            <div>
+              <label>Nights (used)</label>
+              <input id="saNights" type="number" min="0" step="1" />
+            </div>
+            <div>
+              <label>Auto Amount</label>
+              <input type="text" id="saAuto" readonly />
+            </div>
+          </div>`;
+        const n1 = Math.max((proj.phase1_days||0)-1,0), n2 = Math.max((proj.phase2_days||0)-1,0);
+        const stay1 = proj.phase1_supervisor_stay === 'yes' ? n1 : 0;
+        const stay2 = proj.phase2_supervisor_stay === 'yes' ? n2 : 0;
+        const phase = document.getElementById('saPhase').value;
+        document.getElementById('saNights').value = (phase==='1'? stay1 : stay2);
+        updateSASuggestion();
+        document.getElementById('saPhase').addEventListener('change', ()=>{
+          const phase = document.getElementById('saPhase').value;
+          document.getElementById('saNights').value = (phase==='1'? (proj.phase1_supervisor_stay === 'yes'? n1:0) : (proj.phase2_supervisor_stay === 'yes'? n2:0));
+          updateSASuggestion();
+        });
+        document.getElementById('saNights').addEventListener('input', updateSASuggestion);
+      }
+
+      if(cat==='SF'){
+        wrap.innerHTML = `
+          <div class="row">
+            <div>
+              <label>Visit Days (max 3)</label>
+              <input id="sfDays" type="number" min="1" max="3" step="1" />
+            </div>
+            <div>
+              <label>Auto Amount</label>
+              <input type="text" id="sfAuto" readonly />
+            </div>
+            <div></div>
+          </div>`;
+        document.getElementById('sfDays').value = 1;
+        updateSFSuggestion();
+        document.getElementById('sfDays').addEventListener('input', updateSFSuggestion);
+      }
+    }
+
+    function suggestTA(){
+      const nights = asInt(document.getElementById('taNights').value);
+      const techs = asInt(document.getElementById('taTechsCovered').value);
+      const rooms = ceilDiv(techs,3);
+      const amt = nights * rooms * 1500;
+      document.getElementById('amount').value = amt;
+      document.getElementById('suggestion').textContent = `Suggested: Nights × Rooms × ₹1,500 = ${nights} × ${rooms} × 1500 = ₹${amt}`;
+    }
+
+    function suggestTF(){
+      const days = asInt(document.getElementById('tfDays').value);
+      const techs = asInt(document.getElementById('tfTechsCovered').value);
+      const amt = days * techs * 450;
+      document.getElementById('amount').value = amt;
+      document.getElementById('suggestion').textContent = `Suggested: Days × Techs × ₹450 = ${days} × ${techs} × 450 = ₹${amt}`;
+    }
+
+    function updateSASuggestion(){
+      const nights = asInt(document.getElementById('saNights').value);
+      const amt = nights * 1500;
+      document.getElementById('saAuto').value = `₹ ${amt}`;
+      document.getElementById('amount').value = amt;
+      document.getElementById('suggestion').textContent = 'Supervisor has a private room: Nights × ₹1,500';
+    }
+
+    function updateSFSuggestion(){
+      const d = clamp(asInt(document.getElementById('sfDays').value),1,3);
+      document.getElementById('sfDays').value = d;
+      const amt = d * 500;
+      document.getElementById('sfAuto').value = `₹ ${amt}`;
+      document.getElementById('amount').value = amt;
+      document.getElementById('suggestion').textContent = 'Supervisor food: ₹500 per visit day (max 3).';
+    }
+
+    // ======= VOUCHER NUMBER =======
+    function genVoucherNumber(){
+      const code = (currentProjectCode||'PRJ').toUpperCase();
+      const cat = document.getElementById('category').value || 'CAT';
+      const dt = document.getElementById('claimDate').value || todayISO();
+      const y = dt.slice(2,4), m = dt.slice(5,7), d = dt.slice(8,10);
+      const serial = nextSerial(code, false);
+      document.getElementById('voucherNo').value = `${code}-${cat}-${y}${m}${d}-${serial}`;
+    }
+
+    function nextSerial(projectCode, advance){
+      if(!(projectCode in caps.serialByProject)) caps.serialByProject[projectCode] = 0;
+      const cur = caps.serialByProject[projectCode];
+      if(advance) caps.serialByProject[projectCode] = cur+1;
+      return ('' + (cur+1)).padStart(4,'0');
+    }
+
+    // ======= SUBMIT CLAIM =======
+    async function submitClaim(){
+      if(!caps.locked){ alert('Save project & compute caps first.'); return; }
+      if(!currentProjectId){ alert('No project selected'); return; }
+      
+      const cat = document.getElementById('category').value;
+      if(!cat){ alert('Select a category'); return; }
+      
+      const date = document.getElementById('claimDate').value || todayISO();
+      const amountReq = asInt(document.getElementById('amount').value);
+      if(amountReq<=0){ alert('Enter a valid amount'); return; }
+
+      // Collect form data
+      const formData = {
+        action: 'submit_claim',
+        project_id: currentProjectId,
+        project_code: currentProjectCode,
+        category: cat,
+        claim_date: date,
+        amount_requested: amountReq,
+        notes: document.getElementById('notes').value || ''
+      };
+
+      // Add category-specific data
+      switch(cat) {
+        case 'MTS':
+          formData.trip_reference = document.getElementById('mtsTrip')?.value || 'Trip 1';
+          break;
+        case 'TA':
+          formData.phase = document.getElementById('taPhase')?.value || '1';
+          formData.nights = document.getElementById('taNights')?.value || '0';
+          formData.technicians_covered = document.getElementById('taTechsCovered')?.value || '0';
+          break;
+        case 'TF':
+          formData.phase = document.getElementById('tfPhase')?.value || '1';
+          formData.days = document.getElementById('tfDays')?.value || '0';
+          formData.technicians_covered = document.getElementById('tfTechsCovered')?.value || '0';
+          break;
+        case 'ST':
+          formData.visit_number = document.getElementById('stVisit')?.value || '1';
+          break;
+        case 'SA':
+          formData.phase = document.getElementById('saPhase')?.value || '1';
+          formData.nights = document.getElementById('saNights')?.value || '0';
+          break;
+        case 'SF':
+          formData.visit_days = document.getElementById('sfDays')?.value || '1';
+          break;
+      }
+
+      try {
+        const response = await fetch('api.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams(formData)
+        });
+
+        const result = await response.json();
+        if(result.error) throw new Error(result.error);
+
+        // Update local state
+        caps.remaining[getBucketKey(cat)] = result.remaining;
+        updateCapsTable();
+
+        // Update voucher number
+        document.getElementById('voucherNo').value = result.voucher_number;
+
+        // Build voucher HTML
+        const project = caps.map.project;
+        const html = `
+          <div><strong>Blue Max Claims – Claim Voucher</strong></div>
+          <div class="kv" style="margin-top:6px;">
+            <span><strong>Voucher No.</strong> ${result.voucher_number}</span>
+            <span><strong>Date</strong> ${date}</span>
+            <span><strong>Project</strong> ${project.project_code} – ${project.project_name||''}</span>
+          </div>
+          <hr style="border:none;border-top:1px solid #e5e7eb;margin:10px 0;"/>
+          <div class="kv">
+            <span><strong>Category</strong> ${CATEGORY_NAMES[cat]||cat}</span>
+            <span><strong>Requested</strong> ₹${amountReq}</span>
+            <span><strong>Approved</strong> ₹${result.amount_approved}</span>
+            <span><strong>Status</strong> <i class="pill ${result.status==='Auto-Approved'?'ok':result.status==='Auto-Clipped'?'clip':'reject'}">${result.status}</i></span>
+          </div>
+          ${formData.notes? `<div class="note">${formData.notes}</div>`: ''}
+          <div class="kv" style="margin-top:8px;">
+            <span><strong>Entered by</strong> Accountant</span>
+            <span><strong>Proof</strong> ${document.getElementById('proof').files.length > 0 ? 'Yes' : 'No'}</span>
+          </div>
+          <div class="muted" style="margin-top:8px;">This voucher is system‑generated. Balances are not shown.</div>
+        `;
+
+        document.getElementById('voucher').innerHTML = html;
+        document.getElementById('result').innerHTML = `<span class="pill ${result.status==='Auto-Approved'?'ok':result.status==='Auto-Clipped'?'clip':'reject'}">${result.status}</span>`;
+
+        // Reset form
+        document.getElementById('proof').value = '';
+        document.getElementById('notes').value = '';
+        genVoucherNumber();
+
+      } catch(error) {
+        document.getElementById('result').innerHTML = `<div class="alert error">Error: ${error.message}</div>`;
+      }
+    }
+
+    function getBucketKey(category) {
+      switch(category) {
+        case 'MTF':
+        case 'MTG':
+          return 'mtf_mtg_pool';
+        case 'MTS':
+          return 'mts_cap';
+        case 'LU':
+          return 'lu_cap';
+        case 'TA':
+          return 'ta_cap';
+        case 'TF':
+          return 'tf_cap';
+        case 'ST':
+          return 'st_cap';
+        case 'SA':
+          return 'sa_cap';
+        case 'SF':
+          return 'sf_cap';
+        default:
+          return '';
+      }
+    }
+
+    function saveDraft(){
+      alert('Draft saved locally (mock). In a real system, this would save to server.');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Record Monitor Report</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+
+        .header {
+            background: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 1.5rem;
+        }
+
+        .admin-badge {
+            background: #dc3545;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            margin-left: 0.5rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-info span {
+            color: #666;
+        }
+
+        .logout-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .logout-btn:hover {
+            background: #c82333;
+        }
+
+        .main-content {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .welcome-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .welcome-card h2 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .welcome-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .admin-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-card h3 {
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card p {
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .feature-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: transform 0.2s ease;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .feature-btn.secondary {
+            background: #6c757d;
+        }
+
+        .feature-btn.success {
+            background: #28a745;
+        }
+
+        .feature-btn.warning {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .users-table {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+
+        .users-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .users-table th,
+        .users-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .users-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .users-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-badge.admin {
+            background: #dc3545;
+            color: white;
+        }
+
+        .status-badge.user {
+            background: #28a745;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .admin-features {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Record Monitor Report <span class="admin-badge">ADMIN</span></h1>
+        <div class="user-info">
+            <span>Welcome, <span id="username"></span></span>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="welcome-card">
+            <h2>Admin Dashboard</h2>
+            <p>You have administrative access to the Record Monitor Report system. From here, you can manage users, view all reports, and access advanced system features.</p>
+        </div>
+
+        <div class="admin-features">
+            <div class="feature-card">
+                <h3>Claims Management</h3>
+                <p>Access the full Blue Max Claims system with project setup, claim entry, and voucher generation.</p>
+                <button class="feature-btn success" onclick="openClaimsSystem()">Open Claims System</button>
+            </div>
+
+            <div class="feature-card">
+                <h3>User Management</h3>
+                <p>View and manage all system users, their roles, and access permissions.</p>
+                <button class="feature-btn" onclick="viewUsers()">View Users</button>
+                <button class="feature-btn secondary" onclick="addUser()">Add User</button>
+            </div>
+
+            <div class="feature-card">
+                <h3>System Reports</h3>
+                <p>Generate comprehensive reports on system usage, claims, and user activity.</p>
+                <button class="feature-btn" onclick="generateSystemReport()">Generate Report</button>
+                <button class="feature-btn secondary" onclick="viewAllReports()">View All Reports</button>
+            </div>
+
+            <div class="feature-card">
+                <h3>Database Management</h3>
+                <p>Access database tools for backup, maintenance, and data integrity checks.</p>
+                <button class="feature-btn warning" onclick="databaseTools()">Database Tools</button>
+            </div>
+
+            <div class="feature-card">
+                <h3>System Settings</h3>
+                <p>Configure system-wide settings, permissions, and application preferences.</p>
+                <button class="feature-btn secondary" onclick="systemSettings()">Settings</button>
+            </div>
+
+            <div class="feature-card">
+                <h3>Audit Logs</h3>
+                <p>View system audit logs and track all user activities and system changes.</p>
+                <button class="feature-btn" onclick="viewAuditLogs()">View Logs</button>
+            </div>
+        </div>
+
+        <div id="usersSection" class="users-table" style="display: none;">
+            <h3 style="padding: 1rem; margin: 0; background: #f8f9fa;">System Users</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Check authentication on page load
+        window.addEventListener('load', () => {
+            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+            if (!token || !user.username) {
+                window.location.href = '/';
+                return;
+            }
+
+            // Redirect to appropriate dashboard based on role
+            if (user.role === 'user') {
+                window.location.href = '/user-dashboard.html';
+                return;
+            }
+
+            // Display username for admin
+            document.getElementById('username').textContent = user.username;
+
+            // Verify token is still valid
+            fetch('/api/user', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    logout();
+                }
+            })
+            .catch(() => {
+                logout();
+            });
+        });
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/';
+        }
+
+        function openClaimsSystem() {
+            window.open('/claims-system.html', '_blank');
+        }
+
+        function viewUsers() {
+            const usersSection = document.getElementById('usersSection');
+            const tableBody = document.getElementById('usersTableBody');
+            
+            if (usersSection.style.display === 'none') {
+                // Fetch users from admin endpoint
+                const token = localStorage.getItem('token');
+                fetch('/api/admin', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.users) {
+                        tableBody.innerHTML = data.users.map(user => `
+                            <tr>
+                                <td>${user.id}</td>
+                                <td>${user.username}</td>
+                                <td><span class="status-badge ${user.role}">${user.role.toUpperCase()}</span></td>
+                                <td>Active</td>
+                                <td>
+                                    <button class="feature-btn secondary" onclick="editUser(${user.id})">Edit</button>
+                                    ${user.role !== 'admin' ? `<button class="feature-btn warning" onclick="deleteUser(${user.id})">Delete</button>` : ''}
+                                </td>
+                            </tr>
+                        `).join('');
+                    }
+                    usersSection.style.display = 'block';
+                })
+                .catch(error => {
+                    alert('Error fetching users: ' + error.message);
+                });
+            } else {
+                usersSection.style.display = 'none';
+            }
+        }
+
+        function addUser() {
+            const username = prompt('Enter new username:');
+            const password = prompt('Enter password:');
+            const role = prompt('Enter role (user/admin):');
+            
+            if (username && password && role) {
+                alert('Add user functionality will be implemented with database integration.');
+            }
+        }
+
+        function editUser(userId) {
+            alert(`Edit user ${userId} functionality will be implemented.`);
+        }
+
+        function deleteUser(userId) {
+            if (confirm(`Are you sure you want to delete user ${userId}?`)) {
+                alert(`Delete user ${userId} functionality will be implemented.`);
+            }
+        }
+
+        function generateSystemReport() {
+            alert('System report generation will be implemented soon!');
+        }
+
+        function viewAllReports() {
+            alert('View all reports functionality will be implemented soon!');
+        }
+
+        function databaseTools() {
+            alert('Database management tools will be implemented soon!');
+        }
+
+        function systemSettings() {
+            alert('System settings will be implemented soon!');
+        }
+
+        function viewAuditLogs() {
+            alert('Audit logs functionality will be implemented soon!');
+        }
+    </script>
+</body>
+</html>
