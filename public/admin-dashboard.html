@@ -368,15 +368,46 @@
             }
         }
 
-        function addUser() {
-            const username = prompt('Enter new username:');
-            const password = prompt('Enter password:');
-            const role = prompt('Enter role (user/admin):');
-            
-            if (username && password && role) {
-                alert('Add user functionality will be implemented with database integration.');
-            }
+       function addUser() {
+    const username = prompt('Enter new username:');
+    if (!username) return;
+    
+    const password = prompt('Enter password:');
+    if (!password) return;
+    
+    const role = prompt('Enter role (user/admin):');
+    if (!role || !['user', 'admin'].includes(role.toLowerCase())) {
+        alert('Role must be either "user" or "admin"');
+        return;
+    }
+
+    const token = localStorage.getItem('token');
+    
+    fetch('/api/users', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+            username: username,
+            password: password,
+            role: role.toLowerCase()
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('Error: ' + data.error);
+        } else {
+            alert('User created successfully!');
+            viewUsers(); // Refresh the user list
         }
+    })
+    .catch(error => {
+        alert('Error creating user: ' + error.message);
+    });
+}
 
         function editUser(userId) {
             alert(`Edit user ${userId} functionality will be implemented.`);
