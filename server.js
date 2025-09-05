@@ -127,7 +127,87 @@ app.get('/dashboard', (req, res) => {
     // The client-side JavaScript will handle the actual authentication
     res.sendFile(path.join(__dirname, 'public', 'admin-dashboard.html'));
 });
+// User Management API Endpoints
 
+// Get all users (admin only)
+app.get('/api/users', authenticateToken, (req, res) => {
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Admin access required' });
+    }
+    res.json({ users: users.map(u => ({ id: u.id, username: u.username, role: u.role })) });
+});
+
+// Add new user (admin only)
+app.post('/api/users', authenticateToken, async (req, res) => {
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    try {
+        const { username, password, role } = req.body;
+
+        // Validate input
+        if (!username || !password || !role) {
+            return res.status(400).json({ error: 'Username, password, and role are required' });
+        }
+
+        if (!['user', 'admin'].includes(role)) {
+            return res.status(400).json({ error: 'Role must be either "user" or "admin"' });
+        }
+
+        // Check if user already exists
+        const existingUser = users.find(u => u.username === username);
+        if (existingUser) {
+            return res.status(400).json({ error: 'Username already exists' });
+        }
+
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Create new user
+        const newUser = {
+            id: users.length + 1,
+            username,
+            password: hashedPassword,
+            role
+        };
+
+        users.push(newUser);
+
+        res.json({
+            message: 'User created successfully',
+            user: { id: newUser.id, username: newUser.username, role: newUser.role }
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Delete user (admin only)
+app.delete('/api/users/:id', authenticateToken, (req, res) => {
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const userId = parseInt(req.params.id);
+    const userIndex = users.findIndex(u => u.id === userId);
+
+    if (userIndex === -1) {
+        return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Prevent deleting the last admin
+    const userToDelete = users[userIndex];
+    if (userToDelete.role === 'admin') {
+        const adminCount = users.filter(u => u.role === 'admin').length;
+        if (adminCount <= 1) {
+            return res.status(400).json({ error: 'Cannot delete the last admin user' });
+        }
+    }
+
+    users.splice(userIndex, 1);
+    res.json({ message: 'User deleted successfully' });
+});
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });    // Serve claims system
